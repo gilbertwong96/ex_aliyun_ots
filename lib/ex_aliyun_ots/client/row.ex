@@ -39,16 +39,18 @@ defmodule ExAliyunOts.Client.Row do
     serialized_row =
       PlainBuffer.serialize_for_put_row(var_put_row.primary_keys, var_put_row.attribute_columns)
 
-    PutRowRequest
-    |> struct([
-      table_name: var_put_row.table_name,
-      row: serialized_row,
-      condition: proto_condition,
-      transaction_id: var_put_row.transaction_id
-    ])
-    |> map_return_content(var_put_row.return_type, nil)
-    |> PutRowRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      PutRowRequest
+      |> struct([
+        table_name: var_put_row.table_name,
+        row: serialized_row,
+        condition: proto_condition,
+        transaction_id: var_put_row.transaction_id
+      ])
+      |> map_return_content(var_put_row.return_type, nil)
+      |> PutRowRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_put_row(instance, var_put_row) do
@@ -91,7 +93,8 @@ defmodule ExAliyunOts.Client.Row do
           Map.put(get_row_request, :max_versions, var_get_row.max_versions)
       end
 
-    GetRowRequest.encode!(get_row_request) |> IO.iodata_to_binary()
+    {iodata, _size} = GetRowRequest.encode!(get_row_request)
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_get_row(instance, var_get_row) do
@@ -113,16 +116,18 @@ defmodule ExAliyunOts.Client.Row do
 
     proto_condition = Map.update!(var_update_row.condition, :column_condition, &Filter.serialize_filter/1)
 
-    UpdateRowRequest
-    |> struct([
-      table_name: var_update_row.table_name,
-      row_change: serialized_row,
-      condition: proto_condition,
-      transaction_id: var_update_row.transaction_id
-    ])
-    |> map_return_content(var_update_row.return_type, var_update_row.return_columns)
-    |> UpdateRowRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      UpdateRowRequest
+      |> struct([
+        table_name: var_update_row.table_name,
+        row_change: serialized_row,
+        condition: proto_condition,
+        transaction_id: var_update_row.transaction_id
+      ])
+      |> map_return_content(var_update_row.return_type, var_update_row.return_columns)
+      |> UpdateRowRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_update_row(instance, var_update_row) do
@@ -143,16 +148,18 @@ defmodule ExAliyunOts.Client.Row do
 
     proto_condition = Map.update!(var_delete_row.condition, :column_condition, &Filter.serialize_filter/1)
 
-    DeleteRowRequest
-    |> struct([
-      table_name: var_delete_row.table_name,
-      primary_key: serialized_primary_keys,
-      condition: proto_condition,
-      transaction_id: var_delete_row.transaction_id
-    ])
-    |> map_return_content(var_delete_row.return_type, nil)
-    |> DeleteRowRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      DeleteRowRequest
+      |> struct([
+        table_name: var_delete_row.table_name,
+        primary_key: serialized_primary_keys,
+        condition: proto_condition,
+        transaction_id: var_delete_row.transaction_id
+      ])
+      |> map_return_content(var_delete_row.return_type, nil)
+      |> DeleteRowRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_delete_row(instance, var_delete_row) do
@@ -207,7 +214,8 @@ defmodule ExAliyunOts.Client.Row do
           Map.put(get_range_request, :max_versions, var_get_range.max_versions)
       end
 
-    GetRangeRequest.encode!(get_range_request) |> IO.iodata_to_binary()
+    {iodata, _size} = GetRangeRequest.encode!(get_range_request)
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_get_range(instance, var_get_range, next_start_primary_key \\ nil) do
@@ -234,7 +242,8 @@ defmodule ExAliyunOts.Client.Row do
       )
 
     encoded_tables = Enum.map(stream, fn {:ok, request} -> request end)
-    %BatchGetRowRequest{tables: encoded_tables} |> BatchGetRowRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = %BatchGetRowRequest{tables: encoded_tables} |> BatchGetRowRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   defp do_request_to_batch_get_row(var_batch_get_row) do
@@ -342,10 +351,12 @@ defmodule ExAliyunOts.Client.Row do
   end
 
   defp encode_batch_write_row_request(options) do
-    BatchWriteRowRequest
-    |> struct(options)
-    |> BatchWriteRowRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      BatchWriteRowRequest
+      |> struct(options)
+      |> BatchWriteRowRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   defp map_table_in_batch_write_row_request(var_batch_write_row) do

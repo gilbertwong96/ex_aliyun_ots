@@ -195,7 +195,8 @@ defmodule ExAliyunOts.Client.Search do
         index_name: index_name
       }
 
-    request |> CreateSearchIndexRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = request |> CreateSearchIndexRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_create_search_index(instance, var_create_search_index) do
@@ -215,7 +216,7 @@ defmodule ExAliyunOts.Client.Search do
          },
          search_query: search_query
        }) do
-    search_query =
+    {search_query_iodata, _size} =
       %SearchQuery{
         offset: search_query.offset,
         limit: search_query.limit,
@@ -228,7 +229,7 @@ defmodule ExAliyunOts.Client.Search do
         token: search_query.token
       }
       |> SearchQuery.encode!()
-      |> IO.iodata_to_binary()
+    search_query = search_query_iodata |> IO.iodata_to_binary()
 
     proto_columns_to_get =
       %ColumnsToGet{
@@ -244,7 +245,8 @@ defmodule ExAliyunOts.Client.Search do
         search_query: search_query
       }
 
-    request |> SearchRequest.encode!() |> IO.iodata_to_binary()
+    {request_iodata, _size} = request |> SearchRequest.encode!()
+    request_iodata |> IO.iodata_to_binary()
   end
 
   def remote_search(instance, var_search_request) do
@@ -262,10 +264,12 @@ defmodule ExAliyunOts.Client.Search do
          table_name: table_name,
          index_name: index_name
        }) do
-    DeleteSearchIndexRequest
-    |> struct([table_name: table_name, index_name: index_name])
-    |> DeleteSearchIndexRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      DeleteSearchIndexRequest
+      |> struct([table_name: table_name, index_name: index_name])
+      |> DeleteSearchIndexRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_delete_search_index(instance, var_delete_search_index) do
@@ -277,7 +281,11 @@ defmodule ExAliyunOts.Client.Search do
   end
 
   defp request_to_list_search_index(table_name) do
-    %ListSearchIndexRequest{table_name: table_name} |> ListSearchIndexRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %ListSearchIndexRequest{table_name: table_name}
+      |> ListSearchIndexRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_list_search_index(instance, table_name) do
@@ -292,10 +300,11 @@ defmodule ExAliyunOts.Client.Search do
          table_name: table_name,
          index_name: index_name
        }) do
-    DescribeSearchIndexRequest
-    |> struct([table_name: table_name, index_name: index_name])
-    |> DescribeSearchIndexRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      DescribeSearchIndexRequest
+      |> struct([table_name: table_name, index_name: index_name])
+      |> DescribeSearchIndexRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_describe_search_index(instance, var_describe_search_index) do
@@ -307,14 +316,14 @@ defmodule ExAliyunOts.Client.Search do
   end
 
   def request_to_compute_splits(table_name, index_name) do
-    %ComputeSplitsRequest{
+    {iodata, _size} = %ComputeSplitsRequest{
       table_name: table_name,
       search_index_splits_options: %SearchIndexSplitsOptions{
         index_name: index_name
       }
     }
     |> ComputeSplitsRequest.encode!()
-    |> IO.iodata_to_binary()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_compute_splits(instance, request_body) do
@@ -334,7 +343,7 @@ defmodule ExAliyunOts.Client.Search do
         session_id: session_id
       }) do
 
-    scan_query =
+    {scan_query_iodata, _size} =
       %ScanQuery{
         query: prepare_query(scan_query.query),
         limit: scan_query.limit,
@@ -344,7 +353,7 @@ defmodule ExAliyunOts.Client.Search do
         max_parallel: scan_query.max_parallel
       }
       |> ScanQuery.encode!()
-      |> IO.iodata_to_binary()
+    scan_query_iodata |> IO.iodata_to_binary()
 
     proto_columns_to_get =
       %ColumnsToGet{
@@ -361,7 +370,8 @@ defmodule ExAliyunOts.Client.Search do
         session_id: session_id
       }
 
-    request |> ParallelScanRequest.encode!() |> IO.iodata_to_binary()
+    {request_iodata, _size} = request |> ParallelScanRequest.encode!()
+    request_iodata |> IO.iodata_to_binary()
   end
 
   def remote_parallel_scan(instance, request_body) do
@@ -464,9 +474,10 @@ defmodule ExAliyunOts.Client.Search do
 
   defp do_prepare_analyzer_parameter(struct_module, parameter)  do
     analyzer_parameter = struct(struct_module, parameter)
-    struct_module
-    |> apply(:encode!, [analyzer_parameter])
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      struct_module
+      |> apply(:encode!, [analyzer_parameter])
+    iodata |> IO.iodata_to_binary()
   end
 
   defp prepare_sort([]), do: nil
@@ -642,74 +653,76 @@ defmodule ExAliyunOts.Client.Search do
   end
 
   defp map_agg(%{type: type} = agg) when type == AggregationType.min() do
-    MinAggregation
-    |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
-    |> MinAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, type)
+    {iodata, _size} =
+      MinAggregation
+      |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
+      |> MinAggregation.encode!()
+    iodata |> IO.iodata_to_binary() |> to_aggregation(agg.name, type)
   end
 
   defp map_agg(%{type: type} = agg) when type == AggregationType.max() do
-    MaxAggregation
-    |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
-    |> MaxAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, type)
+    {iodata, _size} =
+      MaxAggregation
+      |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
+      |> MaxAggregation.encode!()
+    iodata |> IO.iodata_to_binary() |> to_aggregation(agg.name, type)
   end
 
   defp map_agg(%{type: type} = agg) when type == AggregationType.avg() do
-    AvgAggregation
-    |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
-    |> AvgAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, type)
+    {iodata, _size} =
+      AvgAggregation
+      |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
+      |> AvgAggregation.encode!()
+    iodata |> IO.iodata_to_binary() |> to_aggregation(agg.name, type)
   end
 
   defp map_agg(%{type: type} = agg) when type == AggregationType.distinct_count() do
-    DistinctCountAggregation
-    |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
-    |> DistinctCountAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, type)
+    {iodata, _size} =
+      DistinctCountAggregation
+      |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
+      |> DistinctCountAggregation.encode!()
+    iodata |> IO.iodata_to_binary() |> to_aggregation(agg.name, type)
   end
 
   defp map_agg(%{type: type} = agg) when type == AggregationType.sum() do
-    SumAggregation
-    |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
-    |> SumAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, type)
+    {iodata, _size} =
+      SumAggregation
+      |> struct([field_name: agg.field_name, missing: agg_missing_to_bytes(agg.missing)])
+      |> SumAggregation.encode!()
+    iodata |> IO.iodata_to_binary() |> to_aggregation(agg.name, type)
   end
 
   defp map_agg(%{type: type} = agg) when type == AggregationType.count() do
-    CountAggregation
-    |> struct([field_name: agg.field_name])
-    |> CountAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, type)
+    {iodata, _size} =
+      CountAggregation
+      |> struct([field_name: agg.field_name])
+      |> CountAggregation.encode!()
+    iodata |> IO.iodata_to_binary() |> to_aggregation(agg.name, type)
   end
 
   defp map_agg(%Search.AggregationPercentiles{} = agg) do
-    PercentilesAggregation
-    |> struct(
-      field_name: agg.field_name,
-      percentiles: agg.percentiles,
-      missing: agg_missing_to_bytes(agg.missing)
-    )
-    |> PercentilesAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, AggregationType.percentiles())
+    {iodata, _size} =
+      PercentilesAggregation
+      |> struct(
+        field_name: agg.field_name,
+        percentiles: agg.percentiles,
+        missing: agg_missing_to_bytes(agg.missing)
+      )
+      |> PercentilesAggregation.encode!()
+      |> IO.iodata_to_binary()
+    iodata |> to_aggregation(agg.name, AggregationType.percentiles())
   end
 
   defp map_agg(%Search.AggregationTopRows{} = agg) do
-    TopRowsAggregation
-    |> struct(
-      limit: agg.limit,
-      sort: prepare_sort(agg.sort)
-    )
-    |> TopRowsAggregation.encode!()
-    |> IO.iodata_to_binary()
-    |> to_aggregation(agg.name, AggregationType.top_rows())
+    {iodata, _size} =
+      TopRowsAggregation
+      |> struct(
+        limit: agg.limit,
+        sort: prepare_sort(agg.sort)
+      )
+      |> TopRowsAggregation.encode!()
+      |> IO.iodata_to_binary()
+    iodata |> to_aggregation(agg.name, AggregationType.top_rows())
   end
 
   defp to_aggregation(body, name, type) do
@@ -747,17 +760,17 @@ defmodule ExAliyunOts.Client.Search do
     sub_aggs = map_aggs(sub_aggs, [])
     sort = map_group_by_sort(sort, [])
 
-    GroupByField
-    |> struct([
-      field_name: field_name,
-      size: size,
-      sub_group_bys: sub_group_bys,
-      sub_aggs: sub_aggs,
-      sort: sort
-    ])
-    |> GroupByField.encode!()
-    |> IO.iodata_to_binary()
-    |> to_group_by(name, GroupByType.field())
+    {iodata, _size} =
+      GroupByField
+      |> struct([
+        field_name: field_name,
+        size: size,
+        sub_group_bys: sub_group_bys,
+        sub_aggs: sub_aggs,
+        sort: sort
+      ])
+      |> GroupByField.encode!()
+    iodata |> IO.iodata_to_binary() |> to_group_by(name, GroupByType.field())
   end
 
   defp map_group_by(%Search.GroupByRange{
@@ -772,11 +785,14 @@ defmodule ExAliyunOts.Client.Search do
     sub_aggs = map_aggs(sub_aggs, [])
     ranges = map_group_by_ranges(ranges, [])
 
-    GroupByRange
-    |> struct([field_name: field_name, sub_group_bys: sub_group_bys, sub_aggs: sub_aggs, ranges: ranges])
-    |> GroupByRange.encode!()
-    |> IO.iodata_to_binary()
-    |> to_group_by(name, GroupByType.range())
+    {iodata, _size} =
+      GroupByRange
+      |> struct([field_name: field_name,
+                 sub_group_bys: sub_group_bys,
+                 sub_aggs: sub_aggs,
+                 ranges: ranges])
+      |> GroupByRange.encode!()
+    iodata |> IO.iodata_to_binary() |> to_group_by(name, GroupByType.range())
   end
 
   defp map_group_by(%Search.GroupByFilter{
@@ -790,11 +806,11 @@ defmodule ExAliyunOts.Client.Search do
     sub_aggs = map_aggs(sub_aggs, [])
     filters = map_group_by_filters(filters, [])
 
-    GroupByFilter
-    |> struct([filters: filters, sub_group_bys: sub_group_bys, sub_aggs: sub_aggs])
-    |> GroupByFilter.encode!()
-    |> IO.iodata_to_binary()
-    |> to_group_by(name, GroupByType.filter())
+    {iodata, _size} =
+      GroupByFilter
+      |> struct([filters: filters, sub_group_bys: sub_group_bys, sub_aggs: sub_aggs])
+      |> GroupByFilter.encode!()
+    iodata |> IO.iodata_to_binary() |> to_group_by(name, GroupByType.filter())
   end
 
   defp map_group_by(%Search.GroupByGeoDistance{
@@ -813,17 +829,18 @@ defmodule ExAliyunOts.Client.Search do
     ranges = map_group_by_ranges(ranges, [])
     origin = %GeoPoint{lat: lat, lon: lon}
 
-    GroupByGeoDistance
-    |> struct([
-      field_name: field_name,
-      sub_group_bys: sub_group_bys,
-      sub_aggs: sub_aggs,
-      ranges: ranges,
-      origin: origin
-    ])
-    |> GroupByGeoDistance.encode!()
-    |> IO.iodata_to_binary()
-    |> to_group_by(name, GroupByType.geo_distance())
+    {iodata, _size} =
+      GroupByGeoDistance
+      |> struct([
+        field_name: field_name,
+        sub_group_bys: sub_group_bys,
+        sub_aggs: sub_aggs,
+        ranges: ranges,
+        origin: origin
+      ])
+      |> GroupByGeoDistance.encode!()
+      |> IO.iodata_to_binary()
+    iodata |> to_group_by(name, GroupByType.geo_distance())
   end
 
   defp map_group_by(%Search.GroupByHistogram{
@@ -836,17 +853,18 @@ defmodule ExAliyunOts.Client.Search do
   }) do
     field_range = map_group_by_field_range(min, max)
 
-    GroupByHistogram
-    |> struct(
-      field_name: field_name,
-      interval: term_to_bytes(interval),
-      field_range: field_range,
-      min_doc_count: min_doc_count,
-      missing: agg_missing_to_bytes(missing)
-    )
-    |> GroupByHistogram.encode!()
-    |> IO.iodata_to_binary()
-    |> to_group_by(name, GroupByType.histogram())
+    {iodata, _size} =
+      GroupByHistogram
+      |> struct(
+        field_name: field_name,
+        interval: term_to_bytes(interval),
+        field_range: field_range,
+        min_doc_count: min_doc_count,
+        missing: agg_missing_to_bytes(missing)
+      )
+      |> GroupByHistogram.encode!()
+      |> IO.iodata_to_binary()
+    iodata |> to_group_by(name, GroupByType.histogram())
   end
 
   defp to_group_by(body, name, type) do
@@ -925,14 +943,16 @@ defmodule ExAliyunOts.Client.Search do
          text: text,
          minimum_should_match: minimum_should_match
        }) do
-    query =
+
+    {iodata, _size} =
       %MatchQuery{
         field_name: field_name,
         text: text,
         minimum_should_match: minimum_should_match
       }
       |> MatchQuery.encode!()
-      |> IO.iodata_to_binary()
+
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.match(),
@@ -941,7 +961,8 @@ defmodule ExAliyunOts.Client.Search do
   end
 
   defp prepare_query(%Search.MatchAllQuery{}) do
-    query = %MatchAllQuery{} |> MatchAllQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = %MatchAllQuery{} |> MatchAllQuery.encode!()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.match_all(),
@@ -953,7 +974,10 @@ defmodule ExAliyunOts.Client.Search do
          field_name: field_name,
          text: text
        }) do
-    query = %MatchPhraseQuery{field_name: field_name, text: text} |> MatchPhraseQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %MatchPhraseQuery{field_name: field_name, text: text}
+      |> MatchPhraseQuery.encode!()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.match_phrase(),
@@ -965,7 +989,10 @@ defmodule ExAliyunOts.Client.Search do
          field_name: field_name,
          term: term
        }) do
-    query = %TermQuery{field_name: field_name, term: term_to_bytes(term)} |> TermQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %TermQuery{field_name: field_name, term: term_to_bytes(term)}
+      |> TermQuery.encode!()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.term(),
@@ -978,7 +1005,10 @@ defmodule ExAliyunOts.Client.Search do
          terms: terms
        }) do
     terms_bytes = Enum.map(terms, fn term -> term_to_bytes(term) end)
-    query = %TermsQuery{field_name: field_name, terms: terms_bytes} |> TermsQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %TermsQuery{field_name: field_name, terms: terms_bytes}
+      |> TermsQuery.encode!()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.terms(),
@@ -990,7 +1020,10 @@ defmodule ExAliyunOts.Client.Search do
          field_name: field_name,
          prefix: prefix
        }) do
-    query = %PrefixQuery{field_name: field_name, prefix: prefix} |> PrefixQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %PrefixQuery{field_name: field_name, prefix: prefix}
+      |> PrefixQuery.encode!()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.prefix(),
@@ -1002,7 +1035,9 @@ defmodule ExAliyunOts.Client.Search do
          field_name: field_name,
          value: value
        }) do
-    query = %WildcardQuery{field_name: field_name, value: value} |> WildcardQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %WildcardQuery{field_name: field_name, value: value} |> WildcardQuery.encode!()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.wildcard(),
@@ -1034,7 +1069,7 @@ defmodule ExAliyunOts.Client.Search do
     bytes_from = if from == nil, do: nil, else: term_to_bytes(from)
     bytes_to = if to == nil, do: nil, else: term_to_bytes(to)
 
-    query =
+    {iodata, _size} =
       %RangeQuery{
         field_name: field_name,
         range_from: bytes_from,
@@ -1043,7 +1078,7 @@ defmodule ExAliyunOts.Client.Search do
         include_upper: include_upper
       }
       |> RangeQuery.encode!()
-      |> IO.iodata_to_binary()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.range(),
@@ -1089,7 +1124,7 @@ defmodule ExAliyunOts.Client.Search do
         nil
       end
 
-    query =
+    {iodata, _size} =
       %BoolQuery{
         must_queries: must_queries,
         must_not_queries: must_not_queries,
@@ -1098,7 +1133,8 @@ defmodule ExAliyunOts.Client.Search do
         minimum_should_match: minimum_should_match
       }
       |> BoolQuery.encode!()
-      |> IO.iodata_to_binary()
+
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.bool(),
@@ -1113,7 +1149,11 @@ defmodule ExAliyunOts.Client.Search do
        }) do
     assert_valid_score_mode(score_mode)
 
-    query = %NestedQuery{path: path, query: prepare_query(query), score_mode: score_mode} |> NestedQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %NestedQuery{path: path, query: prepare_query(query), score_mode: score_mode}
+      |> NestedQuery.encode!()
+
+    iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.nested(),
@@ -1128,14 +1168,15 @@ defmodule ExAliyunOts.Client.Search do
        })
        when is_number(distance) and distance >= 0 do
     if Utils.valid_geo_point?(center_point) do
-      query =
+      {iodata, _size} =
+        query =
         %GeoDistanceQuery{
           field_name: field_name,
           center_point: center_point,
           distance: distance
         }
         |> GeoDistanceQuery.encode!()
-        |> IO.iodata_to_binary()
+      iodata |> IO.iodata_to_binary()
 
       %Query{
         type: QueryType.geo_distance(),
@@ -1154,14 +1195,15 @@ defmodule ExAliyunOts.Client.Search do
        }) do
     assert_valid_geo_points([top_left, bottom_right])
 
-    query =
+    {iodata, _size} =
+      query =
       %GeoBoundingBoxQuery{
         field_name: field_name,
         top_left: top_left,
         bottom_right: bottom_right
       }
       |> GeoBoundingBoxQuery.encode!()
-      |> IO.iodata_to_binary()
+    iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.geo_bounding_box(),
@@ -1175,13 +1217,14 @@ defmodule ExAliyunOts.Client.Search do
        }) do
     assert_valid_geo_points(points)
 
-    query =
+    {iodata, _size} =
+      query =
       %GeoPolygonQuery{
         field_name: field_name,
         points: points
       }
       |> GeoPolygonQuery.encode!()
-      |> IO.iodata_to_binary()
+     iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.geo_polygon(),
@@ -1192,7 +1235,10 @@ defmodule ExAliyunOts.Client.Search do
   defp prepare_query(%Search.ExistsQuery{
          field_name: field_name
        }) do
-    query = %ExistsQuery{field_name: field_name} |> ExistsQuery.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %ExistsQuery{field_name: field_name}
+      |> ExistsQuery.encode!()
+    query = iodata |> IO.iodata_to_binary()
 
     %Query{
       type: QueryType.exists(),

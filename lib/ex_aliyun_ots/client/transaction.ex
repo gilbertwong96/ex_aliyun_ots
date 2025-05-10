@@ -18,9 +18,10 @@ defmodule ExAliyunOts.Client.Transaction do
     table_name = var_start_transaction.table_name
     partition_key = PlainBuffer.serialize_primary_keys([var_start_transaction.partition_key])
 
-    %StartLocalTransactionRequest{table_name: table_name, key: partition_key}
-    |> StartLocalTransactionRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %StartLocalTransactionRequest{table_name: table_name, key: partition_key}
+      |> StartLocalTransactionRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_start_local_transaction(instance, var_start_local_transaction) do
@@ -41,10 +42,11 @@ defmodule ExAliyunOts.Client.Transaction do
   end
 
   def remote_commit_transaction(instance, transaction_id) do
-    request_body =
+    {iodata, _size} =
+
       %CommitTransactionRequest{transaction_id: transaction_id}
       |> CommitTransactionRequest.encode!()
-      |> IO.iodata_to_binary()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -57,10 +59,11 @@ defmodule ExAliyunOts.Client.Transaction do
   end
 
   def remote_abort_transaction(instance, transaction_id) do
-    request_body =
+    {iodata, _size} =
       %AbortTransactionRequest{transaction_id: transaction_id}
       |> AbortTransactionRequest.encode!()
-      |> IO.iodata_to_binary()
+
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance

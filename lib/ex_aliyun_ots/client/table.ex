@@ -67,16 +67,18 @@ defmodule ExAliyunOts.Client.Table do
         end
       )
 
-    %CreateTableRequest{
-      table_meta: table_meta,
-      reserved_throughput: reserved_throughput,
-      table_options: table_options,
-      index_metas: index_metas,
-      enable_local_txn: var_create_table.enable_local_txn
-    }
-    |> put_stream_spec(var_create_table.stream_spec)
-    |> CreateTableRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %CreateTableRequest{
+        table_meta: table_meta,
+        reserved_throughput: reserved_throughput,
+        table_options: table_options,
+        index_metas: index_metas,
+        enable_local_txn: var_create_table.enable_local_txn
+      }
+      |> put_stream_spec(var_create_table.stream_spec)
+      |> CreateTableRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_create_table(instance, var_create_table) do
@@ -100,7 +102,8 @@ defmodule ExAliyunOts.Client.Table do
       include_base_data: Keyword.get(options, :include_base_data, true)
     }
 
-    request_body = create_index_request |> CreateIndexRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = create_index_request |> CreateIndexRequest.encode!()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -113,13 +116,13 @@ defmodule ExAliyunOts.Client.Table do
   end
 
   def remote_delete_index(instance, table_name, index_name) do
-    request_body =
+    {iodata, _size} =
       %DropIndexRequest{
         main_table_name: table_name,
         index_name: index_name
       }
       |> DropIndexRequest.encode!()
-      |> IO.iodata_to_binary()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -132,7 +135,8 @@ defmodule ExAliyunOts.Client.Table do
   end
 
   def remote_list_table(instance) do
-    request_body = %ListTableRequest{} |> ListTableRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = %ListTableRequest{} |> ListTableRequest.encode!()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -145,7 +149,8 @@ defmodule ExAliyunOts.Client.Table do
   end
 
   def remote_delete_table(instance, table_name) do
-    request_body = %DeleteTableRequest{table_name: table_name} |> DeleteTableRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = %DeleteTableRequest{table_name: table_name} |> DeleteTableRequest.encode!()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -170,14 +175,16 @@ defmodule ExAliyunOts.Client.Table do
         deviation_cell_version_in_sec: var_update_table.deviation_cell_version_in_sec
       }
 
-    %UpdateTableRequest{
-      table_name: var_update_table.table_name,
-      reserved_throughput: reserved_throughput,
-      table_options: table_options
-    }
-    |> put_stream_spec(var_update_table.stream_spec)
-    |> UpdateTableRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %UpdateTableRequest{
+        table_name: var_update_table.table_name,
+        reserved_throughput: reserved_throughput,
+        table_options: table_options
+      }
+      |> put_stream_spec(var_update_table.stream_spec)
+      |> UpdateTableRequest.encode!()
+
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_update_table(instance, var_update_table) do
@@ -194,8 +201,8 @@ defmodule ExAliyunOts.Client.Table do
   end
 
   def remote_describe_table(instance, table_name) do
-    request_body =
-      %DescribeTableRequest{table_name: table_name} |> DescribeTableRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = %DescribeTableRequest{table_name: table_name} |> DescribeTableRequest.encode!()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -208,12 +215,13 @@ defmodule ExAliyunOts.Client.Table do
   end
 
   def request_to_compute_split_points_by_size(table_name, split_size) do
-    %ComputeSplitPointsBySizeRequest{
-      table_name: table_name,
-      split_size: split_size
-    }
-    |> ComputeSplitPointsBySizeRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %ComputeSplitPointsBySizeRequest{
+        table_name: table_name,
+        split_size: split_size
+      }
+      |> ComputeSplitPointsBySizeRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_compute_split_points_by_size(instance, request_body) do
@@ -233,13 +241,13 @@ defmodule ExAliyunOts.Client.Table do
   def remote_add_defined_columns(instance, table_name, columns) do
     columns = Enum.map(columns, &map_defined_column_schema/1)
 
-    request_body =
+    {iodata, _size} =
       %AddDefinedColumnRequest{
         table_name: table_name,
         columns: columns
       }
       |> AddDefinedColumnRequest.encode!()
-      |> IO.iodata_to_binary()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -252,13 +260,13 @@ defmodule ExAliyunOts.Client.Table do
   end
 
   def remote_delete_defined_columns(instance, table_name, columns) do
-    request_body =
+    {iodata, _size} =
       %DeleteDefinedColumnRequest{
         table_name: table_name,
         columns: columns
       }
       |> DeleteDefinedColumnRequest.encode!()
-      |> IO.iodata_to_binary()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance

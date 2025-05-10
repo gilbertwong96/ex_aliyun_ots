@@ -33,4 +33,4 @@ config :logger, level: :info
 
 config :ex_aliyun_ots, debug: false
 
-import_config "ots.secret.exs"
+# import_config "ots.secret.exs"

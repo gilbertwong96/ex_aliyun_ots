@@ -32,7 +32,10 @@ defmodule ExAliyunOts.Client.Tunnel do
   alias ExAliyunOts.Http
 
   defp request_to_create_tunnel(opts) do
-    %CreateTunnelRequest{tunnel: struct(Tunnel, opts)} |> CreateTunnelRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %CreateTunnelRequest{tunnel: struct(Tunnel, opts)}
+      |> CreateTunnelRequest.encode!()
+     iodata |> IO.iodata_to_binary()
   end
 
   def remote_create_tunnel(instance, options) do
@@ -49,10 +52,11 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   defp request_to_delete_tunnel(opts) do
-    DeleteTunnelRequest
-    |> struct(opts)
-    |> DeleteTunnelRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      DeleteTunnelRequest
+      |> struct(opts)
+      |> DeleteTunnelRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_delete_tunnel(instance, options) do
@@ -69,7 +73,9 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   def remote_list_tunnel(instance, table_name) do
-    request_body = %ListTunnelRequest{table_name: table_name} |> ListTunnelRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %ListTunnelRequest{table_name: table_name} |> ListTunnelRequest.encode!()
+    request_body = iodata |> IO.iodata_to_binary()
 
     result =
       instance
@@ -82,10 +88,11 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   defp request_to_describe_tunnel(opts) do
-    DescribeTunnelRequest
-    |> struct(opts)
-    |> DescribeTunnelRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      DescribeTunnelRequest
+      |> struct(opts)
+      |> DescribeTunnelRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_describe_tunnel(instance, options) do
@@ -102,12 +109,13 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   defp request_to_connect_tunnel(opts) do
-    %ConnectRequest{
-      tunnel_id: opts[:tunnel_id],
-      client_config: %ClientConfig{timeout: opts[:timeout], client_tag: opts[:client_tag]}
-    }
-    |> ConnectRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %ConnectRequest{
+        tunnel_id: opts[:tunnel_id],
+        client_config: %ClientConfig{timeout: opts[:timeout], client_tag: opts[:client_tag]}
+      }
+      |> ConnectRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_connect_tunnel(instance, options) do
@@ -129,13 +137,14 @@ defmodule ExAliyunOts.Client.Tunnel do
         struct(Channel, channel)
       end)
 
-    %HeartbeatRequest{
-      tunnel_id: opts[:tunnel_id],
-      client_id: opts[:client_id],
-      channels: channels
-    }
-    |> HeartbeatRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      %HeartbeatRequest{
+        tunnel_id: opts[:tunnel_id],
+        client_id: opts[:client_id],
+        channels: channels
+      }
+      |> HeartbeatRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_heartbeat(instance, options) do
@@ -152,10 +161,11 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   defp request_to_shutdown(opts) do
-    ShutdownRequest
-    |> struct(opts)
-    |> ShutdownRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      ShutdownRequest
+      |> struct(opts)
+      |> ShutdownRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_shutdown(instance, options) do
@@ -172,10 +182,11 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   defp request_to_get_checkpoint(opts) do
-    GetCheckpointRequest
-    |> struct(opts)
-    |> GetCheckpointRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      GetCheckpointRequest
+      |> struct(opts)
+      |> GetCheckpointRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_get_checkpoint(instance, options) do
@@ -192,10 +203,11 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   def request_to_readrecords(opts) do
-    ReadRecordsRequest
-    |> struct(opts)
-    |> ReadRecordsRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      ReadRecordsRequest
+      |> struct(opts)
+      |> ReadRecordsRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_readrecords(instance, options) do
@@ -229,10 +241,11 @@ defmodule ExAliyunOts.Client.Tunnel do
   end
 
   defp request_to_checkpoint(opts) do
-    CheckpointRequest
-    |> struct(opts)
-    |> CheckpointRequest.encode!()
-    |> IO.iodata_to_binary()
+    {iodata, _size} =
+      CheckpointRequest
+      |> struct(opts)
+      |> CheckpointRequest.encode!()
+    iodata |> IO.iodata_to_binary()
   end
 
   def remote_checkpoint(instance, options) do

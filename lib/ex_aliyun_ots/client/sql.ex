@@ -5,8 +5,8 @@ defmodule ExAliyunOts.Client.SQL do
   alias ExAliyunOts.TableStore.{SQLQueryRequest, SQLQueryResponse}
 
   def remote_sql_query(instance, query) do
-    request_body =
-      %SQLQueryRequest{query: query} |> SQLQueryRequest.encode!() |> IO.iodata_to_binary()
+    {iodata, _size} = %SQLQueryRequest{query: query} |> SQLQueryRequest.encode!()
+    request_body = iodata |> IO.iodata_to_binary()
 
     instance
     |> Http.client("/SQLQuery", request_body, &SQLQueryResponse.decode!/1)

@@ -28,7 +28,9 @@ defmodule ExAliyunOts.Mixfile do
 
   defp deps do
     [
-      {:tablestore_protos, "~> 0.1.6"},
+      {:tablestore_protos,
+       github: "gilbertwong96/tablestore_protos",
+       branch: "fix/fix-compilation-warnings"},
       {:finch, "~> 0.5"},
       {:gen_state_machine, "~> 2.0"},
       {:tesla, "~> 1.4"},
