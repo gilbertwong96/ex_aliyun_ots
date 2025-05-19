@@ -107,9 +107,13 @@ defmodule ExAliyunOts.Filter do
     comparator = @comparator_mapping[comparator]
     filter_type = FilterType.single_column()
 
-    quote location: :keep, bind_quoted: [column_name: column_name, column_value: column_value, comparator: comparator, filter_type: filter_type] do
-      case column_name do
-        {column_name, column_options} ->
+    case column_name do
+      {column_name, column_options} ->
+        quote location: :keep, bind_quoted: [column_name: column_name,
+                                             column_options: column_options,
+                                             column_value: column_value,
+                                             comparator: comparator,
+                                             filter_type: filter_type] do
           %Filter{
             type: filter_type,
             filter: %SingleColumnValueFilter{
@@ -121,8 +125,12 @@ defmodule ExAliyunOts.Filter do
               value_trans_rule: ExAliyunOts.Filter.value_transfer_rule(column_options[:value_trans_rule])
             }
           }
-
-        column_name ->
+        end
+      column_name ->
+        quote location: :keep, bind_quoted: [column_name: column_name,
+                                             column_value: column_value,
+                                             comparator: comparator,
+                                             filter_type: filter_type] do
           %Filter{
             type: filter_type,
             filter: %SingleColumnValueFilter{
@@ -133,7 +141,7 @@ defmodule ExAliyunOts.Filter do
               latest_version_only: true
             }
           }
-      end
+        end
     end
   end
 
